@@ -41,10 +41,26 @@ void ofxUserContentUpload::update(){
 	while(executedJobs.size()){
 		lock();
 		JobExecutionResult n = executedJobs[0];
-		ofNotifyEvent(jobExecuted, n, this);
+		ofNotifyEvent(eventJobExecuted, n, this);
 		executedJobs.erase(executedJobs.begin());
 		unlock();
 	}
+}
+
+void ofxUserContentUpload::draw(int x, int y){
+
+	int nPending = 0;
+	lock();
+	nPending = pendingApiRequests.size();
+	unlock();
+
+	string msg = "ofxUserContentUpload: \n" 
+	"  Num Pending: " + ofToString(numPendingWhenLastChecked + nPending) + "\n"
+	"  Num Pending Retry: " + ofToString(numFailedWhenLastChecked) + "\n" +
+	"  Num Executed OK so far: " + ofToString(numExecutedOkJobs) + "\n" +
+	"  Num Executed & Failed so far: " + ofToString(numExecutedFailedJobs);
+
+	ofDrawBitmapStringHighlight(msg, x, y);
 }
 
 
@@ -59,8 +75,6 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 	failJobSkipRetryFactor = 20;
 	timeOut = 20;
 
-	pendingJobs = 0;
-	failedJobs = 0;
 	startThread();
 }
 
@@ -82,15 +96,13 @@ void ofxUserContentUpload::threadedFunction(){
 
 		ofSleepMillis(executeJobsRate * 500); //sleep N/2 seconds b4 trying to execute the next one
 
-		lock(); //////////////////////////////////////////////////////////////////////////////////
-
 		while(pendingApiRequests.size()){
+			lock(); //////////////////////////////////////////////////////////////////////////////////
 			Job & j = pendingApiRequests[0];
 			saveJobToDisk(j, false);
 			pendingApiRequests.erase(pendingApiRequests.begin());
+			unlock(); //////////////////////////////////////////////////////////////////////////////
 		}
-
-		unlock(); //////////////////////////////////////////////////////////////////////////////
 
 		executeNextPendingJob(false); //lets exec a job from the pending list
 
@@ -225,8 +237,10 @@ bool ofxUserContentUpload::executeNextPendingJob(bool fromFailedFolder){
 
 	if(fromFailedFolder){
 		d.listDir(ofToDataPath(FAILED_PENDING_JOBS_LOCAL_PATH));
+		numPendingWhenLastChecked = d.size();
 	}else{
 		d.listDir(ofToDataPath(PENDING_JOBS_LOCAL_PATH));
+		numFailedWhenLastChecked = d.size();
 	}
 	d.sort();
 
@@ -251,12 +265,15 @@ bool ofxUserContentUpload::executeNextPendingJob(bool fromFailedFolder){
 
 		if(jobLoadOk){
 			//ofLogNotice("ofxUserContentUpload") << "About to Execute API job: '" << CooperHewittAPI::toString(j.type) << "' file: " << fileName;
-			jobExecOK = executeJob(j);
+			JobExecutionResult r;
+			jobExecOK = executeJob(j, r.serverResponse, r.serverStatusCode, r.errorDescription);
 
 			if(jobExecOK){
 				ofLogNotice("ofxUserContentUpload") << "Delete Job '" << j.jobID << "'  file: '" << fileName << "'";
 				ofFile::removeFile(fp);
+				numExecutedOkJobs++;
 			}else{
+				numExecutedFailedJobs++;
 				if(fromFailedFolder){
 					if (j.numTries > maxJobRetries){
 						ofLogError("ofxUserContentUpload") << "JOB FAILED AGAIN '" << j.jobID << "' - FOR THE LAST TIME! (" << j.numTries << ") deleting it '" << fileName << "'";
@@ -274,7 +291,6 @@ bool ofxUserContentUpload::executeNextPendingJob(bool fromFailedFolder){
 				}
 			}
 
-			JobExecutionResult r;
 			r.jobID = j.jobID;
 			r.isJobFresh = !fromFailedFolder;
 			r.ok = jobExecOK;
@@ -291,7 +307,13 @@ bool ofxUserContentUpload::executeNextPendingJob(bool fromFailedFolder){
 }
 
 
-bool ofxUserContentUpload::executeJob(const Job & j){
+bool ofxUserContentUpload::executeJob(const Job & j,
+									  string & serverResponse, 
+									  HTTPResponse::HTTPStatus & serverStatus,
+									  string & errorDescription
+									  ){
+
+	ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Starting Job: \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░";
 
 	HTTPResponse::HTTPStatus statusCode = HTTPResponse::HTTPStatus(-1);
 
@@ -318,10 +340,14 @@ bool ofxUserContentUpload::executeJob(const Job & j){
 	printStatus(j.jobID, r, serverMsg, statusCode);
 
 	if(j.verbose){
-		ofLogNotice("ofxUserContentUpload") << "Job Executed \"" << j.jobID << "\"; Verbose Summary : \n" << r.toString();
+		ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Job Executed \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\nVerbose Summary : \n" << r.toString();
 	}else{
-		ofLogNotice("ofxUserContentUpload") << "Job Executed \"" << j.jobID << "\"; server response : \n" << r.responseBody;
+		ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Job Executed \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\nServer Response : " << r.responseBody;
 	}
+
+	serverResponse = r.responseBody;
+	serverStatus = statusCode;
+	errorDescription = serverMsg + " | " + r.reasonForStatus;
 
 	bool shouldRetryJoblater = shouldRetryJobLater(statusCode);
 	if(!shouldRetryJoblater){
@@ -337,7 +363,7 @@ bool ofxUserContentUpload::executeJob(const Job & j){
 void ofxUserContentUpload::deleteFilesForJob(const Job & job){
 	for(auto file : job.fileFields){ //delete all uploaded files - job will not be retried
 		if(file.second.first.size()){
-			ofLogNotice("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " from JOB \"" << job.jobID << "\"";
+			ofLogNotice("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " attached to JOB \"" << job.jobID << "\"";
 			ofFile::removeFile(file.second.first, true);
 		}
 	}

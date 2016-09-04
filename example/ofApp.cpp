@@ -7,6 +7,20 @@ void ofApp::setup(){
 	upload.getExecuteJobsRate() = 1;
 	upload.getFailJobSkipRetryFactor() = 1;
 	upload.setMaxNumberRetries(4);
+
+	ofAddListener(upload.eventJobExecuted, this, &ofApp::onJobExecuted);
+}
+
+
+void ofApp::onJobExecuted(ofxUserContentUpload::JobExecutionResult& r){
+
+	ofLogNotice("ofApp") << "onJobExecuted: " << r.jobID;
+	ofLogNotice("ofApp") << "serverResponse: " << r.serverResponse;
+
+	if(!r.ok){
+		ofLogError("ofApp") << "status code: " << r.serverStatusCode;
+		ofLogError("ofApp") << "error description: " << r.errorDescription;
+	}
 }
 
 
@@ -19,6 +33,7 @@ void ofApp::update(){
 
 void ofApp::draw(){
 
+	upload.draw(20,20);
 }
 
 void ofApp::keyPressed(int key){
@@ -30,7 +45,7 @@ void ofApp::keyPressed(int key){
 		job.addStringField("email_address2", "banana@uri.cat");
 		job.addStringField("language", "en");
 		job.addFile("file", "benotto.jpg");
-		job.verbose = true;
+		job.verbose = false;
 		upload.addJob(job);
 		counter++;
 	}
@@ -42,7 +57,7 @@ void ofApp::keyPressed(int key){
 		job.addStringField("email_address2", "banana@uri.cat");
 		job.addStringField("language", "en");
 		job.addFile("file", "benotto.jpg");
-		job.verbose = true;
+		job.verbose = false;
 		upload.addJob(job);
 		counter++;
 	}

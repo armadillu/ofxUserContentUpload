@@ -65,6 +65,9 @@ public:
 		bool ok;
 		bool isJobFresh; //ie not a retry, the first time we try
 		string jobID;
+		string serverResponse;
+		string errorDescription;
+		HTTPResponse::HTTPStatus serverStatusCode;
 	};
 
 	ofxUserContentUpload();
@@ -73,13 +76,15 @@ public:
 	void setup(const string & storageDir, FailedJobPolicy retryPolicy = ofxUserContentUpload::defaultPolicy);
 	void setMaxNumberRetries(int n){ maxJobRetries = n;} //if a job failed to send (and keeps failing)it will only be re-tried N times at max
 	void addJob(Job & job);
+
 	void update();
+	void draw(int x, int y);
 
 	void setTimeOut(float timeOut_){timeOut = timeOut_;}
 	float& getExecuteJobsRate(){return executeJobsRate;}
 	int& getFailJobSkipRetryFactor(){return failJobSkipRetryFactor;}
 
-	ofEvent<JobExecutionResult> jobExecuted;
+	ofEvent<JobExecutionResult> eventJobExecuted;
 
 	static FailedJobPolicy defaultPolicy;
 
@@ -94,7 +99,11 @@ private:
 	void saveJobToDisk(const Job &, bool failedDir);
 	bool loadJobFromDisk(const string & path, Job & job);
 	bool executeNextPendingJob(bool fromFailedFolder);
-	bool executeJob(const Job & );
+	bool executeJob(const Job &,
+					string & serverResponse,
+					HTTPResponse::HTTPStatus & serverStatus,
+					string & errorDescription
+					);
 
 	void printStatus(const string & jobID,
 					 HttpFormResponse & r,
@@ -110,11 +119,15 @@ private:
 	float executeJobsRate; //seconds
 	int failJobSkipRetryFactor; //N times executeJobsRate
 
-	int pendingJobs;
-	int failedJobs;
+	int numExecutedOkJobs = 0;
+	int numExecutedFailedJobs = 0;
+
 	int maxJobRetries = 50;
 
 	string storageDir;
+
+	int numPendingWhenLastChecked = 0;
+	int numFailedWhenLastChecked = 0;
 
 	string getNewUUID();
 

@@ -24,4 +24,5 @@ public:
 	ofxUserContentUpload upload;
 	int counter = 0;
 
+	void onJobExecuted(ofxUserContentUpload::JobExecutionResult& r);
 };
