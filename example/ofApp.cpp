@@ -45,12 +45,36 @@ void ofApp::keyPressed(int key){
 		job.addStringField("email_address2", "banana@uri.cat");
 		job.addStringField("language", "en");
 		job.addFile("file", "benotto.jpg");
-		job.verbose = false;
+		job.verbose = true;
 		upload.addJob(job);
 		counter++;
 	}
 
 	if(key == '2'){
+		ofxUserContentUpload::Job job;
+		job.createJob("http://192.168.33.10/portrait/submit", 80, "myTest GOOD " + ofToString(counter));
+		job.addStringField("email_address1", "oriol@uri.cat");
+		job.addStringField("email_address2", "banana@uri.cat");
+		job.addStringField("language", "en");
+		job.addFile("file", "vitus.jpg");
+		job.verbose = true;
+		upload.addJob(job);
+		counter++;
+	}
+
+	if(key == '3'){
+		ofxUserContentUpload::Job job;
+		job.createJob("http://192.168.33.10/portrait/submit", 80, "myTest GOOD " + ofToString(counter));
+		job.addStringField("email_address1", "oriol@uri.cat");
+		job.addStringField("email_address2", "banana@uri.cat");
+		job.addStringField("language", "en");
+		job.addFile("file", "razesa.jpg");
+		job.verbose = true;
+		upload.addJob(job);
+		counter++;
+	}
+
+	if(key == '4'){
 		ofxUserContentUpload::Job job;
 		job.createJob("http://192.168.33.100/portrait/submit", 80, "myTest BAD " + ofToString(counter));
 		job.addStringField("email_address1", "oriol@uri.cat");
@@ -61,6 +85,7 @@ void ofApp::keyPressed(int key){
 		upload.addJob(job);
 		counter++;
 	}
+
 }
 
 
