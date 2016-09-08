@@ -179,6 +179,7 @@ bool ofxUserContentUpload::loadJobFromDisk(const string & path, Job & job){
 
 	bool parseOK = true;
 	if(job.host.size() == 0){
+		ofLogError("ofxUserContentUpload") << "host not defined!";
 		parseOK = false;
 	}
 	xml.popTag();
@@ -188,8 +189,9 @@ bool ofxUserContentUpload::loadJobFromDisk(const string & path, Job & job){
 	for(int i = 0; i < n; i++){
 		string fieldName = xml.getAttribute("field", "fieldName", "", i);
 		string fieldValue = xml.getAttribute("field", "fieldValue", "", i);
-		if(fieldName.size() == 0 || fieldValue.size() == 0){
+		if(fieldName.size() == 0 ){
 			parseOK = false;
+			ofLogError("ofxUserContentUpload") << "empty fieldName! " << fieldName << " - " << fieldValue;
 		}else{
 			job.formFields[fieldName] = fieldValue;
 		}

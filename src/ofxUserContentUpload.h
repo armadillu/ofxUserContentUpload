@@ -74,19 +74,27 @@ public:
 	~ofxUserContentUpload();
 
 	void setup(const string & storageDir, FailedJobPolicy retryPolicy = ofxUserContentUpload::defaultPolicy);
-	void setMaxNumberRetries(int n){ maxJobRetries = n;} //if a job failed to send (and keeps failing)it will only be re-tried N times at max
+
 	void addJob(Job & job);
 
 	void update();
 	void draw(int x, int y);
 
+	void setMaxNumberRetries(int n){ maxJobRetries = n;} //if a job failed to send (and keeps failing)it will only be re-tried N times at max
+	int& getMaxNumRetries(){return maxJobRetries;}
 	void setTimeOut(float timeOut_){timeOut = timeOut_;}
+	float& getTimeOut(){return timeOut;}
 	float& getExecuteJobsRate(){return executeJobsRate;}
 	int& getFailJobSkipRetryFactor(){return failJobSkipRetryFactor;}
 
 	ofEvent<JobExecutionResult> eventJobExecuted;
 
 	static FailedJobPolicy defaultPolicy;
+
+
+	static string getNewUUID();
+	static string getFileSystemSafeString(const string & input);
+
 
 private:
 
@@ -129,11 +137,8 @@ private:
 	int numPendingWhenLastChecked = 0;
 	int numFailedWhenLastChecked = 0;
 
-	string getNewUUID();
-
 	bool shouldRetryJobLater(HTTPResponse::HTTPStatus); //this decides if a job is to give up or retry later if it failed
 	HTTPResponse::HTTPStatus analyzeStatus(HttpFormResponse & r, string &serverMessage, bool verbose);
-	string getFileSystemSafeString(const string & input);
 
 	void deleteFilesForJob(const Job & job);
 };
