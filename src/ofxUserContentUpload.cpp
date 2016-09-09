@@ -15,9 +15,7 @@ ofxUserContentUpload::FailedJobPolicy ofxUserContentUpload::defaultPolicy = Fail
 
 ofxUserContentUpload::~ofxUserContentUpload(){
 	ofLogNotice("ofxUserContentUpload") << "~ofxUserContentUpload()";
-	if(isThreadRunning()){
-		waitForThread(true);
-	}
+	waitForThread(true, executeJobsRate * 1000 * 2);
 }
 
 ofxUserContentUpload::ofxUserContentUpload(){
@@ -106,11 +104,14 @@ void ofxUserContentUpload::threadedFunction(){
 
 		executeNextPendingJob(false); //lets exec a job from the pending list
 
-		ofSleepMillis(executeJobsRate * 500); //sleep N/2 seconds b4 trying to execute the next FAILED job
+		if(isThreadRunning()){
+			ofSleepMillis(executeJobsRate * 500); //sleep N/2 seconds b4 trying to execute the next FAILED job
 
-		if(c%failJobSkipRetryFactor == 0){ //once every N times, we try to execute failed jobs
-			executeNextPendingJob(true); //and then lets try run one from the failed list
-		}
+			if(c%failJobSkipRetryFactor == 0){ //once every N times, we try to execute failed jobs
+				executeNextPendingJob(true); //and then lets try run one from the failed list
+			}
+		} //if we are exiting, dont do the 2nd half of the sleeping
+
 		c++;
 	}
 
