@@ -101,7 +101,16 @@ void ofxUserContentUpload::threadedFunction(){
 
 	while(isThreadRunning()){
 
-		ofSleepMillis(executeJobsRate * 500); //sleep N/2 seconds b4 trying to execute the next one
+		int sleepUnit = 100;
+		int millis = executeJobsRate * 500 / sleepUnit;
+
+		//we sleep in small segments to avoid delaying the app quitting
+		for(int i = 0; i < millis; i++){ //sleep N/2 seconds b4 trying to execute the next job
+			sleep(sleepUnit);
+			if(!isThreadRunning()){
+				return; //app exiting - lets stop early!
+			}
+		}
 
 		while(pendingApiRequests.size()){
 			lock(); //////////////////////////////////////////////////////////////////////////////////
@@ -114,13 +123,18 @@ void ofxUserContentUpload::threadedFunction(){
 		executeNextPendingJob(false); //lets exec a job from the pending list
 
 		if(isThreadRunning()){
-			ofSleepMillis(executeJobsRate * 500); //sleep N/2 seconds b4 trying to execute the next FAILED job
+
+			for(int i = 0; i < millis; i++){ //sleep N/2 seconds b4 trying to execute the next FAILED job
+				sleep(sleepUnit);
+				if(!isThreadRunning()){
+					return; //app exiting - lets stop early!
+				}
+			}
 
 			if(c%failJobSkipRetryFactor == 0){ //once every N times, we try to execute failed jobs
 				executeNextPendingJob(true); //and then lets try run one from the failed list
 			}
 		} //if we are exiting, dont do the 2nd half of the sleeping
-
 		c++;
 	}
 
