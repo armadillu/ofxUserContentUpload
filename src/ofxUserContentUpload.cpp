@@ -66,8 +66,13 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 
 	this->retryPolicy = retryPolicy;
 	this->storageDir = storageDir;
-	ofDirectory::createDirectory(PENDING_JOBS_LOCAL_PATH, true, true);
-	ofDirectory::createDirectory(FAILED_PENDING_JOBS_LOCAL_PATH, true, true);
+	if(!ofDirectory::doesDirectoryExist(PENDING_JOBS_LOCAL_PATH)){
+		ofDirectory::createDirectory(PENDING_JOBS_LOCAL_PATH, true, true);
+	}
+
+	if(!ofDirectory::doesDirectoryExist(FAILED_PENDING_JOBS_LOCAL_PATH)){
+		ofDirectory::createDirectory(FAILED_PENDING_JOBS_LOCAL_PATH, true, true);
+	}
 
 	executeJobsRate = 1.0; //reasonable default
 	failJobSkipRetryFactor = 20;
@@ -79,6 +84,10 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 
 void ofxUserContentUpload::addJob(Job & job){
 
+	if(!storageDir.size()){
+		ofLogError("ofxUserContentUpload") << "Can't addJob()! ofxUserContentUpload is Not Setup!";
+		return;
+	}
 	ofLogNotice("ofxUserContentUpload") << "adding a new job '" << job.jobID << "'.";
 	lock();
 	pendingApiRequests.push_back(job);
@@ -214,6 +223,12 @@ bool ofxUserContentUpload::loadJobFromDisk(const string & path, Job & job){
 	xml.popTag();
 
 	return parseOK;
+}
+
+
+string ofxUserContentUpload::getUniqueFilename(const string & prefix){
+	string fn = prefix + "_" + ofToString(ofGetUnixTime()) + "_" + getNewUUID();
+	return fn;
 }
 
 

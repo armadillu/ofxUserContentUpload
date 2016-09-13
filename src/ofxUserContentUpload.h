@@ -94,6 +94,7 @@ public:
 
 	static string getNewUUID();
 	static string getFileSystemSafeString(const string & input);
+	static string getUniqueFilename(const string & name); //"unique" filename generator
 
 
 private:
