@@ -142,5 +142,13 @@ private:
 	HTTPResponse::HTTPStatus analyzeStatus(HttpFormResponse & r, string &serverMessage, bool verbose);
 
 	void deleteFilesForJob(const Job & job);
+#ifdef TARGET_WIN32
+	const string separator1 = "$$$$$$$$$$$$$$$$$$$  ";
+	const string separator2 = "  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$";
+#else
+	const string separator1 = "░░░░░░░░░░░░░░░░░░░  ";
+	const string separator2 = " ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░";
+
+#endif
 };
 

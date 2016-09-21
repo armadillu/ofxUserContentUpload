@@ -345,7 +345,7 @@ bool ofxUserContentUpload::executeJob(const Job & j,
 									  string & errorDescription
 									  ){
 
-	ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Starting Job: \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░";
+	ofLogNotice("ofxUserContentUpload") << separator1 << "Starting Job: \"" << j.jobID << "\"" << separator2 ;
 
 	HTTPResponse::HTTPStatus statusCode = HTTPResponse::HTTPStatus(-1);
 
@@ -372,9 +372,11 @@ bool ofxUserContentUpload::executeJob(const Job & j,
 	printStatus(j.jobID, r, serverMsg, statusCode);
 
 	if(j.verbose){
-		ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Job Executed \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\nVerbose Summary : \n" << r.toString();
+		ofLogNotice("ofxUserContentUpload") << separator1 << "Job Executed \"" << j.jobID << "\"" << separator2;
+		ofLogWarning("ofxUserContentUpload") << "Verbose Summary : " << r.toString();
 	}else{
-		ofLogNotice("ofxUserContentUpload") << "░░░░░░░░░░░░░░░░░░░ Job Executed \"" << j.jobID << "\" ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\nServer Response : " << r.responseBody;
+		ofLogNotice("ofxUserContentUpload") << separator1 << "Job Executed \"" << j.jobID << "\"" << separator2;
+		ofLogWarning("ofxUserContentUpload") << "\nServer Response : " << r.responseBody;
 	}
 
 	serverResponse = r.responseBody;
@@ -395,7 +397,7 @@ bool ofxUserContentUpload::executeJob(const Job & j,
 void ofxUserContentUpload::deleteFilesForJob(const Job & job){
 	for(auto file : job.fileFields){ //delete all uploaded files - job will not be retried
 		if(file.second.first.size()){
-			ofLogNotice("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " attached to JOB \"" << job.jobID << "\"";
+			ofLogWarning("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " attached to JOB \"" << job.jobID << "\"";
 			ofFile::removeFile(file.second.first, true);
 		}
 	}
