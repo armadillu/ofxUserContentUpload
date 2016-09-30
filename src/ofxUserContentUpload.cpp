@@ -20,6 +20,10 @@ ofxUserContentUpload::~ofxUserContentUpload(){
 
 ofxUserContentUpload::ofxUserContentUpload(){
 
+	executeJobsRate = 1.0; //reasonable default
+	failJobSkipRetryFactor = 20;
+	timeOut = 20;
+
 	//given a serverside http status code after executing a job
 	//should the job be deleted (true) or stored for a Retry Later (false)?
 	//if no specification, job will BE RETRIED LATER
@@ -74,9 +78,6 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 		ofDirectory::createDirectory(FAILED_PENDING_JOBS_LOCAL_PATH, true, true);
 	}
 
-	executeJobsRate = 1.0; //reasonable default
-	failJobSkipRetryFactor = 20;
-	timeOut = 20;
 
 	startThread();
 }
