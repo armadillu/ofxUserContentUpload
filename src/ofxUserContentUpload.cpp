@@ -23,20 +23,6 @@ ofxUserContentUpload::ofxUserContentUpload(){
 	executeJobsRate = 1.0; //reasonable default
 	failJobSkipRetryFactor = 20;
 	timeOut = 20;
-
-	//given a serverside http status code after executing a job
-	//should the job be deleted (true) or stored for a Retry Later (false)?
-	//if no specification, job will BE RETRIED LATER
-
-	//default policy is FALSE (keep the job and retry it again later!)
-	//so define any positive status codes as TRUE
-	if(defaultPolicy.size() == 0){
-		defaultPolicy[HTTPResponse::HTTP_OK] = false; //job done - all ok - no need to rety!
-		defaultPolicy[HTTPResponse::HTTP_BAD_REQUEST] = true; //if its our fault - dont try again - would fail every time anyway
-		defaultPolicy[HTTPResponse::HTTP_UNAUTHORIZED] = true; //will always fail
-		defaultPolicy[HTTPResponse::HTTP_FORBIDDEN] = true; //will always fail
-		defaultPolicy[HTTPResponse::HTTP_GONE] = true; //will always fail
-	}
 }
 
 void ofxUserContentUpload::update(){
@@ -67,6 +53,20 @@ void ofxUserContentUpload::draw(int x, int y){
 
 
 void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retryPolicy){
+
+	//given a serverside http status code after executing a job
+	//should the job be deleted (true) or stored for a Retry Later (false)?
+	//if no specification, job will BE RETRIED LATER
+
+	//default policy is FALSE (keep the job and retry it again later!)
+	//so define any positive status codes as TRUE
+	if (defaultPolicy.size() == 0) {
+		defaultPolicy[HTTPResponse::HTTP_OK] = false; //job done - all ok - no need to rety!
+		defaultPolicy[HTTPResponse::HTTP_BAD_REQUEST] = true; //if its our fault - dont try again - would fail every time anyway
+		defaultPolicy[HTTPResponse::HTTP_UNAUTHORIZED] = true; //will always fail
+		defaultPolicy[HTTPResponse::HTTP_FORBIDDEN] = true; //will always fail
+		defaultPolicy[HTTPResponse::HTTP_GONE] = true; //will always fail
+	}
 
 	this->retryPolicy = retryPolicy;
 	this->storageDir = storageDir;
