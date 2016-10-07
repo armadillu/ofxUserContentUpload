@@ -10,8 +10,6 @@
 #include "ofxXmlSettings.h"
 #include "ofxRemoteUIServer.h"
 
-ofxUserContentUpload::FailedJobPolicy ofxUserContentUpload::defaultPolicy = FailedJobPolicy();
-
 
 ofxUserContentUpload::~ofxUserContentUpload(){
 	ofLogNotice("ofxUserContentUpload") << "~ofxUserContentUpload()";
@@ -51,6 +49,20 @@ void ofxUserContentUpload::draw(int x, int y){
 	ofDrawBitmapStringHighlight(msg, x, y);
 }
 
+ofxUserContentUpload::FailedJobPolicy ofxUserContentUpload::getDefaultRetryPolicy() {
+	FailedJobPolicy defaultPolicy;
+	//default policy is FALSE (keep the job and retry it again later!)
+	//so define any positive status codes as TRUE - when those happen we assume the job went through ok
+	//and can be deleted.
+	// to be clear TRUE means the job needs to be retried late
+	// FALSE meanse the job is not to be retried - bc its done or bc its our fault and we cant fix it.
+	defaultPolicy[HTTPResponse::HTTP_OK] = false; //job done - all ok - no need to rety!
+	defaultPolicy[HTTPResponse::HTTP_BAD_REQUEST] = true; //if its our fault - dont try again - would fail every time anyway
+	defaultPolicy[HTTPResponse::HTTP_UNAUTHORIZED] = true; //will always fail
+	defaultPolicy[HTTPResponse::HTTP_FORBIDDEN] = true; //will always fail
+	defaultPolicy[HTTPResponse::HTTP_GONE] = true; //will always fail
+	return defaultPolicy;
+}
 
 void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retryPolicy){
 
@@ -58,15 +70,6 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 	//should the job be deleted (true) or stored for a Retry Later (false)?
 	//if no specification, job will BE RETRIED LATER
 
-	//default policy is FALSE (keep the job and retry it again later!)
-	//so define any positive status codes as TRUE
-	if (defaultPolicy.size() == 0) {
-		defaultPolicy[HTTPResponse::HTTP_OK] = false; //job done - all ok - no need to rety!
-		defaultPolicy[HTTPResponse::HTTP_BAD_REQUEST] = true; //if its our fault - dont try again - would fail every time anyway
-		defaultPolicy[HTTPResponse::HTTP_UNAUTHORIZED] = true; //will always fail
-		defaultPolicy[HTTPResponse::HTTP_FORBIDDEN] = true; //will always fail
-		defaultPolicy[HTTPResponse::HTTP_GONE] = true; //will always fail
-	}
 
 	this->retryPolicy = retryPolicy;
 	this->storageDir = storageDir;
@@ -77,7 +80,6 @@ void ofxUserContentUpload::setup(const string &storageDir, FailedJobPolicy retry
 	if(!ofDirectory::doesDirectoryExist(FAILED_PENDING_JOBS_LOCAL_PATH)){
 		ofDirectory::createDirectory(FAILED_PENDING_JOBS_LOCAL_PATH, true, true);
 	}
-
 
 	startThread();
 }

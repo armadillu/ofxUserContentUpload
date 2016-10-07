@@ -73,7 +73,7 @@ public:
 	ofxUserContentUpload();
 	~ofxUserContentUpload();
 
-	void setup(const string & storageDir, FailedJobPolicy retryPolicy = ofxUserContentUpload::defaultPolicy);
+	void setup(const string & storageDir, FailedJobPolicy retryPolicy = getDefaultRetryPolicy());
 
 	void addJob(Job & job);
 
@@ -89,13 +89,11 @@ public:
 
 	ofEvent<JobExecutionResult> eventJobExecuted;
 
-	static FailedJobPolicy defaultPolicy;
-
-
 	static string getNewUUID();
 	static string getFileSystemSafeString(const string & input);
 	static string getUniqueFilename(const string & name); //"unique" filename generator
 
+	static FailedJobPolicy getDefaultRetryPolicy();
 
 private:
 
