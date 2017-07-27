@@ -1,0 +1,7 @@
+ofxTimeMeasurements
+ofxPoco
+ofxRemoteUI
+ofxOsc
+ofxXmlSettings
+ofxUserContentUpload
+ofxHttpForm
