@@ -6,7 +6,7 @@ echo "Executing ci/linux/install.sh"
 export OF_ROOT=~/openFrameworks
 export OF_ADDONS=$OF_ROOT/addons
 
-ADDONS="armadillu/ofxHttpForm armadillu/ofxRemoteUI"
+ADDONS="armadillu/ofxHttpForm armadillu/ofxRemoteUI armadillu/ofxTimeMeasurements"
 
 cd $OF_ADDONS
 
