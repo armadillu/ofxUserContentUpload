@@ -8,8 +8,6 @@ int main( ){
 
 	ofGLFWWindowSettings winSettings;
 	winSettings.numSamples = 8;
-	winSettings.width = 800;
-	winSettings.height = 600;
 
 
 	shared_ptr<ofAppBaseWindow> win = ofCreateWindow(winSettings);	// sets up the opengl context!
