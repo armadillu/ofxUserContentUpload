@@ -81,10 +81,10 @@ public:
 	void draw(int x, int y);
 
 	void setMaxNumberRetries(int n){ maxJobRetries = n;} //if a job failed to send (and keeps failing)it will only be re-tried N times at max
-	int& getMaxNumRetries(){return maxJobRetries;}
+	int& getMaxNumRetries(){return maxJobRetries;} //all files will be deleted for that job
 	void setTimeOut(float timeOut_){timeOut = timeOut_;}
 	float& getTimeOut(){return timeOut;}
-	float& getExecuteJobsRate(){return executeJobsRate;}
+	float& getExecuteJobsRate(){return executeJobsRate;} //seconds - look if there's jobs pending every N seconds
 	int& getFailJobSkipRetryFactor(){return failJobSkipRetryFactor;}
 
 	ofEvent<JobExecutionResult> eventJobExecuted;
