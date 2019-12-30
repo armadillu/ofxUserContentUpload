@@ -376,10 +376,10 @@ bool ofxUserContentUpload::executeJob(const Job & j,
 
 	if(j.verbose){
 		ofLogNotice("ofxUserContentUpload") << separator1 << "Job Executed \"" << j.jobID << "\"" << separator2;
-		ofLogWarning("ofxUserContentUpload") << "Verbose Summary : " << r.toString();
+		ofLogNotice("ofxUserContentUpload") << "Verbose Summary : " << r.toString();
 	}else{
 		ofLogNotice("ofxUserContentUpload") << separator1 << "Job Executed \"" << j.jobID << "\"" << separator2;
-		ofLogWarning("ofxUserContentUpload") << "\nServer Response : " << r.responseBody;
+		ofLogNotice("ofxUserContentUpload") << "Server Response : " << r.responseBody;
 	}
 
 	serverResponse = r.responseBody;
@@ -400,7 +400,7 @@ bool ofxUserContentUpload::executeJob(const Job & j,
 void ofxUserContentUpload::deleteFilesForJob(const Job & job){
 	for(auto file : job.fileFields){ //delete all uploaded files - job will not be retried
 		if(file.second.first.size()){
-			ofLogWarning("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " attached to JOB \"" << job.jobID << "\"";
+			ofLogNotice("ofxUserContentUpload") << "Removing user content file at \"" << file.second.first << "\"" << " attached to JOB \"" << job.jobID << "\"";
 			ofFile::removeFile(file.second.first, true);
 		}
 	}
