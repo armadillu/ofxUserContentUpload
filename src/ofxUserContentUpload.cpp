@@ -12,8 +12,8 @@
 
 
 ofxUserContentUpload::~ofxUserContentUpload(){
-	ofLogNotice("ofxUserContentUpload") << "~ofxUserContentUpload()";
-	waitForThread(true, executeJobsRate * 1000 * 2);
+	ofLogWarning("ofxUserContentUpload") << "~ofxUserContentUpload()";
+	waitForThread(true, timeOut * 1000 * 1.1);
 }
 
 ofxUserContentUpload::ofxUserContentUpload(){

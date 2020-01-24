@@ -71,7 +71,7 @@ public:
 	};
 
 	ofxUserContentUpload();
-	~ofxUserContentUpload();
+	virtual ~ofxUserContentUpload();
 
 	void setup(const string & storageDir, FailedJobPolicy retryPolicy = getDefaultRetryPolicy());
 
@@ -102,6 +102,7 @@ private:
 	vector<Job> pendingApiRequests;
 
 	void threadedFunction();
+	bool threadRuns = false;
 
 	void saveJobToDisk(const Job &, bool failedDir);
 	bool loadJobFromDisk(const string & path, Job & job);
