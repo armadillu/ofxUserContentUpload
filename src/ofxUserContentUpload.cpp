@@ -13,7 +13,11 @@
 
 ofxUserContentUpload::~ofxUserContentUpload(){
 	ofLogWarning("ofxUserContentUpload") << "~ofxUserContentUpload()";
-	waitForThread(true, timeOut * 1000 * 1.1);
+	try{
+		waitForThread(true, timeOut * 1000 * 1.1);
+	}catch(std::exception e){
+		ofLogError("ofxUserContentUpload") << "Exception at waitForThread()! " << e.what();
+	}
 }
 
 ofxUserContentUpload::ofxUserContentUpload(){
